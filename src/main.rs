@@ -35,7 +35,13 @@ fn main() {
 fn hex_dump(bytes: &[u8], cols: usize, plain: bool, group: usize, bits: bool) {
     let mut longest_chunk = 0;
 
+    let mut line = 0;
+
     for chunk in bytes.chunks(cols) {
+        if !plain {
+            print!("{:08x}: ", line);
+        }
+
         let mut chunk_size = 0;
         for group in chunk.chunks(group) {
             for byte in group {
@@ -78,6 +84,7 @@ fn hex_dump(bytes: &[u8], cols: usize, plain: bool, group: usize, bits: bool) {
             }
         }
 
+        line += chunk.len();
         println!();
     }
 }
