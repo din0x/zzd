@@ -1,5 +1,5 @@
-use std::{fs::File, io::Read, path::PathBuf};
 use clap::Parser;
+use std::{fs::File, io::Read, path::PathBuf};
 
 #[derive(Parser)]
 struct Args {
@@ -33,7 +33,7 @@ fn hex_dump(bytes: &[u8], cols: usize, plain: bool, bits: bool) {
                 print!("{:02x}", byte);
             }
 
-            if i % 2 == 1 && !plain || bits{
+            if i % 2 == 1 && !plain || bits {
                 print!(" ");
             }
         }
@@ -45,12 +45,11 @@ fn hex_dump(bytes: &[u8], cols: usize, plain: bool, bits: bool) {
 
         print!("\x1b[{}G ", cols * 3 - cols / 2);
 
-        for ch in chunk.iter().map(|el| *el as char) {
-            match ch {
-                ' ' => print!("·"),
-                '\r' => print!("\\r"),
-                '\n' => print!("\\n"),
-                _ => print!("{}", ch),
+        for ch in chunk.iter().map(|el| *el) {
+            match ch as char {
+                '\r' | '\n' | '\0' | '\t' => print!("."),
+                ch if ch.is_control() => print!("."),
+                _ => print!("{}", ch as char),
             }
         }
 
