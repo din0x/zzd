@@ -4,12 +4,16 @@ use std::{fs::File, io::Read, path::PathBuf};
 #[derive(Parser)]
 struct Args {
     file: PathBuf,
+    /// Set the number of bytes per line in the output
     #[arg(short, long)]
     cols: Option<u8>,
+    /// Output in plain hexdump style
     #[arg(short, long)]
     plain: bool,
+    /// Switch to bits dump
     #[arg(short, long)]
     bits: bool,
+    /// Separate the output of every <BYTES> by whitespace
     #[arg(short='g', long="groupsize")]
     bytes: Option<usize>,
 }
