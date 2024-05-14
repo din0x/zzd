@@ -13,8 +13,14 @@ struct Args {
     /// Switch to bits dump
     #[arg(short, long)]
     bits: bool,
+    /// Start at <OFFSET> bytes
+    #[arg(short = 's', long = "start")]
+    offset: Option<usize>,
+    /// Stop writing after <LEN> bytes
+    #[arg(short = 'l', long = "len")]
+    len: Option<usize>,
     /// Separate the output of every <BYTES> by whitespace
-    #[arg(short='g', long="groupsize")]
+    #[arg(short = 'g', long = "groupsize")]
     bytes: Option<usize>,
 }
 
@@ -27,15 +33,34 @@ fn main() {
 
     let cols = args.cols.unwrap_or(16);
 
-    let group = if args.bits { 1 } else { args.bytes.unwrap_or(2) };
+    let group = args.bytes.unwrap_or(if args.bits { 1 } else { 2 });
 
-    hex_dump(&bytes, cols as usize, args.plain, group, args.bits);
+    let offset = args.offset.unwrap_or(0).min(bytes.len() - 1).min(bytes.len());
+    let bytes = &bytes[offset..bytes.len()];
+    let len = args.len.unwrap_or(bytes.len() - 1).clamp(0, bytes.len());
+    let bytes = &bytes[0..len];
+
+    hex_dump(
+        &bytes,
+        cols as usize,
+        args.plain,
+        group,
+        args.bits,
+        args.offset.unwrap_or(0),
+    );
 }
 
-fn hex_dump(bytes: &[u8], cols: usize, plain: bool, group: usize, bits: bool) {
+fn hex_dump(
+    bytes: &[u8],
+    cols: usize,
+    plain: bool,
+    group: usize,
+    bits: bool,
+    skip: usize,
+) {
     let mut longest_chunk = 0;
 
-    let mut line = 0;
+    let mut line = skip;
 
     for chunk in bytes.chunks(cols) {
         if !plain {
