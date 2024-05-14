@@ -10,9 +10,10 @@ cargo build --release;
 
 ## Usage
 `zzd [OPTIONS] <FILE>`
-|      Option     |                 Description                  |
-|-----------------|----------------------------------------------|
-| `-c`, `--cols`  |Set the number of bytes per line in the output|
-| `-p`, `--plain` |Output in plain hexdump style                 |
-| `-b`, `--bits`  |Switch to bits dump                           |
-| `-h`, `--help`  |Print help                                    |
+|        Option       |                  Description                   |
+|---------------------|------------------------------------------------|
+| `-c`, `--cols`      | Set the number of bytes per line in the output |
+| `-p`, `--plain`     | Output in plain hexdump style                  |
+| `-b`, `--bits`      | Switch to bits dump                            |
+| `-g`, `--groupsize` | Separate the output of every <BYTES> by whitespace|
+| `-h`, `--help`      | Print help                                     |

@@ -10,6 +10,8 @@ struct Args {
     plain: bool,
     #[arg(short, long)]
     bits: bool,
+    #[arg(short='g', long="groupsize")]
+    bytes: Option<usize>,
 }
 
 fn main() {
@@ -21,38 +23,57 @@ fn main() {
 
     let cols = args.cols.unwrap_or(16);
 
-    hex_dump(&bytes, cols as usize, args.plain, args.bits);
+    let group = if args.bits { 1 } else { args.bytes.unwrap_or(2) };
+
+    hex_dump(&bytes, cols as usize, args.plain, group, args.bits);
 }
 
-fn hex_dump(bytes: &[u8], cols: usize, plain: bool, bits: bool) {
+fn hex_dump(bytes: &[u8], cols: usize, plain: bool, group: usize, bits: bool) {
+    let mut longest_chunk = 0;
+
     for chunk in bytes.chunks(cols) {
-        for (i, byte) in chunk.iter().enumerate() {
-            if bits {
-                print!("{:08b}", byte)
-            } else {
-                print!("{:02x}", byte);
+        let mut chunk_size = 0;
+        for group in chunk.chunks(group) {
+            for byte in group {
+                if bits {
+                    print!("{:08b}", byte);
+                    chunk_size += 8;
+                } else {
+                    print!("{:02x}", byte);
+                    chunk_size += 2;
+                }
             }
 
-            if i % 2 == 1 && !plain || bits {
+            if !plain {
+                chunk_size += 1;
+                print!(" ");
+            }
+
+            if chunk_size > longest_chunk {
+                longest_chunk = chunk_size;
+            }
+        }
+
+        print!(" ");
+
+        if chunk.len() != cols {
+            let spaces_to_print = longest_chunk - chunk_size;
+
+            for _ in 0..spaces_to_print {
                 print!(" ");
             }
         }
 
-        if plain {
-            println!();
-            continue;
-        }
-
-        print!("\x1b[{}G ", cols * 3 - cols / 2);
-
-        for ch in chunk.iter().map(|el| *el) {
-            match ch as char {
-                '\r' | '\n' | '\0' | '\t' => print!("."),
-                ch if ch.is_control() => print!("."),
-                _ => print!("{}", ch as char),
+        if !plain {
+            for ch in chunk.iter().copied() {
+                match ch as char {
+                    '\r' | '\n' | '\0' | '\t' => print!("."),
+                    ch if ch.is_control() => print!("."),
+                    _ => print!("{}", ch as char),
+                }
             }
         }
 
-        println!()
+        println!();
     }
 }
